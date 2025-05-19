@@ -15,6 +15,7 @@ var (
 	errorLog *log.Logger
 	debugLog *log.Logger
 	infoLog  *log.Logger
+	warnLog *log.Logger
 	loggers  = []*log.Logger{errorLog, debugLog}
 	mu       sync.Mutex
 )
@@ -40,6 +41,7 @@ func InitLoger(logFilePath string) {
 		errorLog = log.New(os.Stdout, "\033[31m[error]\033[0m ", log.LstdFlags|log.Lshortfile)
 		debugLog = log.New(os.Stdout, "\033[32m[debug]\033[0m ", log.LstdFlags|log.Lshortfile)
 		infoLog = log.New(os.Stdout, "\033[34m[info]\033[0m ", log.LstdFlags|log.Lshortfile)
+		warnLog = log.New(os.Stdout, "\033[33m[warn]\033[0m ", log.LstdFlags|log.Lshortfile)
 	} else {
 		logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
@@ -48,6 +50,7 @@ func InitLoger(logFilePath string) {
 		errorLog = log.New(logFile, "\033[31m[error]\033[0m ", log.LstdFlags|log.Lshortfile)
 		debugLog = log.New(logFile, "\033[32m[debug]\033[0m ", log.LstdFlags|log.Lshortfile)
 		infoLog = log.New(logFile, "\033[34m[info]\033[0m ", log.LstdFlags|log.Lshortfile)
+		warnLog = log.New(logFile, "\033[33m[warn]\033[0m ", log.LstdFlags|log.Lshortfile)
 	}
 }
 
@@ -72,14 +75,14 @@ func InitLogerProject(conf *xconfig.WeConfig) {
 			currentDate := time.Now().Format("2006-01-02")
 			newLogFilePath := fmt.Sprintf("%s%s_%s", logPath, projname, currentDate)
 
-			logFile, err := os.OpenFile(newLogFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+			outputFile, err := os.OpenFile(newLogFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 			if err != nil {
 				log.Fatalf("Failed to open new log file: %v", err)
 			}
 
-			errorLog.SetOutput(logFile)
-			debugLog.SetOutput(logFile)
-			infoLog.SetOutput(logFile)
+			errorLog.SetOutput(outputFile)
+			debugLog.SetOutput(outputFile)
+			infoLog.SetOutput(outputFile)
 
 			Infof("日志文件已切换到: %s\n", newLogFilePath)
 		}
@@ -110,6 +113,14 @@ func Info(v ...any) {
 
 func Infof(format string, v ...any) {
 	logWithPosition(infoLog, fmt.Sprintf(format, v...), colorBlue)
+}
+
+func Warn(v ...any) {
+	logWithPosition(infoLog, fmt.Sprint(v...), colorYellow)
+}
+
+func Warnf(format string, v ...any) {
+	logWithPosition(infoLog, fmt.Sprintf(format, v...), colorYellow)
 }
 
 func TestColor(v ...any) {

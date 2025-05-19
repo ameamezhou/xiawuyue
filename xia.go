@@ -1,6 +1,7 @@
 package xiawuyue
 
 import (
+	"github.com/ameamezhou/xiawuyue/xconfig"
 	"net/http"
 	"path"
 	"strings"
@@ -206,7 +207,17 @@ func (x *Xia) ServerStart() {
 		x.addr = ":9999"
 	}
 	xlog.Infof("listen localhost %s", x.addr)
-	http.ListenAndServe(x.addr, x)
+	err := http.ListenAndServe(x.addr, x)
+	if err != nil {
+		xlog.Errorf("server start file, %v", err)
+	}
+}
+
+func (x *Xia) EnvInit(c *xconfig.WeConfig){
+	// env init --> 标准化命名
+
+	// log init
+	xlog.InitLogerProject(c)
 }
 
 // ------------------------- Response 返回值的结构体
